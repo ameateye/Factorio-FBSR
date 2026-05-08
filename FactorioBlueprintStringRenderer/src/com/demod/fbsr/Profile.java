@@ -56,8 +56,6 @@ import org.rapidoid.commons.Str;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.demod.dcba.CommandReporting;
-import com.demod.dcba.CommandReporting.ExceptionWithBlame;
 import com.demod.factorio.DataTable;
 import com.demod.factorio.FactorioData;
 import com.demod.factorio.ModInfo;
