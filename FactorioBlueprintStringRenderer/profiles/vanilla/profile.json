@@ -1,0 +1,36 @@
+{
+  "enabled": true,
+  "mods": [
+		"base",
+		"space-age",
+		"quality",
+		"elevated-rails"
+  ],
+  "mod-overrides": {},
+  "entity-overrides": {
+    "bottomless-chest": {"editor": true},
+    "electric-energy-interface": {"editor": true},
+    "fluid-wagon": {"mods": []},
+    "infinity-cargo-wagon": {"editor": true},
+    "infinity-chest": {"editor": true},
+    "infinity-pipe": {"editor": true},
+    "linked-belt": {"editor": true},
+    "linked-chest": {"editor": true},
+    "loader": {"editor": true},
+    "locomotive": {"mods": []},
+    "one-way-valve": {"editor": true},
+    "overflow-valve": {"editor": true},
+    "proxy-container": {"editor": true},
+    "rail-chain-signal": {"mods": []},
+    "rail-signal": {"mods": []},
+    "simple-entity-with-force": {"editor": true},
+    "simple-entity-with-owner": {"editor": true},
+    "tank": {"rendering": "CarRendering"},
+    "top-up-valve": {"editor": true}
+  },
+  "tile-overrides": {
+    "grass-1": {"editor": true},
+    "landfill": {"editor": true},
+    "water": {"editor": true}
+  }
+}
