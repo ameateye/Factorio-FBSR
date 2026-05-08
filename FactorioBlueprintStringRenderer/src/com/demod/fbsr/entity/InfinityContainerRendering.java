@@ -19,8 +19,6 @@ import com.demod.fbsr.map.MapIcon;
 import com.demod.fbsr.map.MapPosition;
 import com.demod.fbsr.map.MapRenderable;
 
-import net.dv8tion.jda.api.entities.Icon;
-
 @EntityType("infinity-container")
 public class InfinityContainerRendering extends BaseContainerRendering {
 	@Override
