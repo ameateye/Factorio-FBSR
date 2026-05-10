@@ -91,11 +91,13 @@ public class ReplaySvgRender {
 
         String text = Files.readString(input.toPath());
         JSONObject json = new JSONObject(text);
-        // Optional recipes list lives at the top level (not inside `blueprint`)
-        // — bp-export-real puts every recipe-name a machine ever ran into
-        // there so we can render a per-recipe icon sprite atlas. Read before
-        // unwrapping so it survives.
+        // Optional recipes / filter-items lists live at the top level (not
+        // inside `blueprint`). fbsr-prep collects every recipe-name a machine
+        // ever ran and every item-name ever set as a splitter / inserter
+        // filter, so we can render an icon-sprite atlas for the React
+        // overlay layer. Read before unwrapping so they survive.
         JSONArray recipesArray = json.optJSONArray("recipes");
+        JSONArray filterItemsArray = json.optJSONArray("filterItems");
         if (json.has("blueprint")) {
             json = json.getJSONObject("blueprint");
         }
@@ -337,6 +339,33 @@ public class ReplaySvgRender {
                 }
             }
 
+            // === filter-item-icon sprite pass ===
+            // One sprite per item that was ever set as a splitter filter or
+            // inserter filter. Reuses the same FBSR-style backdrop so visual
+            // weight matches recipe icons. sid = "f:<itemName>". Items whose
+            // icon can't be resolved are dropped silently — map-prep filters
+            // events against the atlas the same way it does for recipes.
+            int filterRendered = 0;
+            int filterSkipped = 0;
+            if (filterItemsArray != null) {
+                for (int i = 0; i < filterItemsArray.length(); i++) {
+                    String itemName = filterItemsArray.getString(i);
+                    String sid = "f:" + itemName;
+                    if (spriteData.containsKey(sid)) continue;
+                    Optional<IconDef> icon = resolver.resolveIconItemName(itemName);
+                    if (icon.isEmpty()) icon = resolver.resolveIconFluidName(itemName);
+                    if (icon.isEmpty()) { filterSkipped++; continue; }
+                    BufferedImage iconImg = renderRecipeIconFbsrStyle(icon.get());
+                    if (iconImg == null) { filterSkipped++; continue; }
+                    ByteArrayOutputStream fbaos = new ByteArrayOutputStream();
+                    ImageIO.write(iconImg, "PNG", fbaos);
+                    String b64 = Base64.getEncoder().encodeToString(fbaos.toByteArray());
+                    spriteSize.put(sid, new double[]{RECIPE_ICON_TOTAL_TILES, RECIPE_ICON_TOTAL_TILES});
+                    spriteData.put(sid, b64);
+                    filterRendered++;
+                }
+            }
+
             double vbW = maxX - minX, vbH = maxY - minY;
 
             output.getAbsoluteFile().getParentFile().mkdirs();
@@ -380,6 +409,7 @@ public class ReplaySvgRender {
             System.out.println("renderables emitted: " + renderablesEmitted);
             System.out.println("unique sprites: " + hashToId.size());
             System.out.println("recipe icons: rendered=" + recipeRendered + " skipped=" + recipeSkipped);
+            System.out.println("filter icons: rendered=" + filterRendered + " skipped=" + filterSkipped);
             System.out.println("viewBox: " + fmt(minX) + " " + fmt(minY) + " " + fmt(vbW) + " " + fmt(vbH));
             System.out.println("render time: " + ms + " ms");
             System.out.println("svg size: " + output.length() + " bytes");
