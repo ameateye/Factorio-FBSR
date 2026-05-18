@@ -141,4 +141,11 @@ public class WallRendering extends EntityWithOwnerRendering {
 
 		map.setWall(entity.getPosition());
 	}
+
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		map.removeWall(entity.getPosition());
+	}
 }

@@ -165,12 +165,22 @@ public class SplitterRendering extends TransportBeltConnectableRendering {
 	@Override
 	public void populateWorldMap(WorldMap map, MapEntity entity) {
 		super.populateWorldMap(map, entity);
-		
+
 		Direction direction = entity.getDirection();
 		MapPosition pos = entity.getPosition();
 		MapPosition belt1Pos = direction.left().offset(pos, 0.5);
 		MapPosition belt2Pos = direction.right().offset(pos, 0.5);
 		map.setBelt(belt1Pos, direction, false, true, false, false);
 		map.setBelt(belt2Pos, direction, false, true, false, false);
+	}
+
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		Direction direction = entity.getDirection();
+		MapPosition pos = entity.getPosition();
+		map.removeBelt(direction.left().offset(pos, 0.5));
+		map.removeBelt(direction.right().offset(pos, 0.5));
 	}
 }

@@ -304,6 +304,11 @@ public abstract class EntityRendererFactory {
 		// default do nothing
 	}
 
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		// default do nothing; subclasses that override populateWorldMap should
+		// mirror their world-map writes here so an entity can be removed cleanly.
+	}
+
 	public void setProfile(Profile profile) {
 		this.profile = profile;
 	}

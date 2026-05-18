@@ -119,4 +119,11 @@ public class ElevatedPipeRendering extends FurnaceRendering {
 
         map.setElevatedPipe(entity.getPosition(), entity);
     }
+
+    @Override
+    public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+        super.unpopulateWorldMap(map, entity);
+
+        map.removeElevatedPipe(entity.getPosition());
+    }
 }

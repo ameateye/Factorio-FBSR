@@ -55,12 +55,19 @@ public class GateRendering extends EntityWithOwnerRendering {
 	@Override
 	public void populateWorldMap(WorldMap map, MapEntity entity) {
 		super.populateWorldMap(map, entity);
-		
+
 		MapPosition pos = entity.getPosition();
 		if (isVertical(entity)) {
 			map.setVerticalGate(pos);
 		} else {
 			map.setHorizontalGate(pos);
 		}
+	}
+
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		map.removeGate(entity.getPosition());
 	}
 }

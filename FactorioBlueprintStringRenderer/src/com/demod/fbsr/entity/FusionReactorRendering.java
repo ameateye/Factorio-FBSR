@@ -105,4 +105,13 @@ public class FusionReactorRendering extends EntityWithOwnerRendering {
 		}
 	}
 
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		for (FPVector pos : protoConnectionLocations) {
+			map.removeFusionConnections(entity.getPosition().add(MapPosition.convert(pos)));
+		}
+	}
+
 }

@@ -228,4 +228,43 @@ public abstract class EntityRendering extends EntityRendererFactory {
 		}
 	}
 
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Direction dir = entity.getDirection();
+
+		for (BindFluidBox bindFluidBox : bindings.getFluidBoxes()) {
+			if (!bindFluidBox.test(map, entity)) {
+				continue;
+			}
+
+			for (FPFluidBox fluidBox : bindFluidBox.getFluidBoxes()) {
+				for (FPPipeConnectionDefinition conn : fluidBox.pipeConnections) {
+					if (!bindFluidBox.connectorTest(map, entity, fluidBox, conn)) {
+						continue;
+					}
+					if (!conn.connectionType.equals("normal")) {
+						continue;
+					}
+					if (conn.direction.isPresent() && conn.position.isPresent()) {
+						Direction facing = conn.direction.get().rotate(dir);
+						MapPosition pos = dir.rotate(MapPosition.convert(conn.position.get())).add(entity.getPosition());
+						map.removePipe(pos, conn.getLayerBits(), facing);
+					}
+				}
+			}
+		}
+
+		for (BindHeatBuffer bindHeatBuffer : bindings.getHeatBuffers()) {
+			if (!bindHeatBuffer.test(map, entity)) {
+				continue;
+			}
+
+			for (FPHeatConnection conn : bindHeatBuffer.getHeatBuffer().connections) {
+				Direction facing = conn.direction.rotate(dir);
+				MapPosition pos = dir.rotate(MapPosition.convert(conn.position)).add(entity.getPosition());
+				map.removeHeatPipe(pos, facing);
+			}
+		}
+	}
+
 }

@@ -214,6 +214,13 @@ public class TransportBeltRendering extends TransportBeltConnectableRendering {
 	}
 
 	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		map.removeBelt(entity.getPosition());
+	}
+
+	@Override
 	public void createWireConnector(Consumer<MapRenderable> register, BiConsumer<Integer, WirePoint> registerWirePoint,
 			MapEntity entity, List<MapEntity> wired, WorldMap map) {
 		super.createWireConnector(register, registerWirePoint, entity, wired, map);

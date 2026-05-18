@@ -305,4 +305,14 @@ public abstract class CargoBayConnectionsRendering extends EntityWithOwnerRender
 		}
 	}
 
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		MapPosition pos = entity.getPosition();
+		for (MapPosition dcp : protoConnectionPoints) {
+			map.removeCargoBayConnectable(pos.add(dcp));
+		}
+	}
+
 }

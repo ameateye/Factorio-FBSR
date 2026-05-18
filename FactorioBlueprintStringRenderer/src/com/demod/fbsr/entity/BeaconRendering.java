@@ -71,7 +71,7 @@ public class BeaconRendering extends EntityWithOwnerRendering {
 	@Override
 	public void populateWorldMap(WorldMap map, MapEntity entity) {
 		super.populateWorldMap(map, entity);
-		
+
 		MapPosition pos = entity.getPosition();
 		MapRect supplyBounds = protoSelectionBox.createRect().expandUnit(protoSupplyAreaDistance).add(pos);
 
@@ -83,6 +83,25 @@ public class BeaconRendering extends EntityWithOwnerRendering {
 		for (int xFP = supplyBounds.getXFP() + halfFP; xFP < x2FP; xFP += tileFP) {
 			for (int yFP = supplyBounds.getYFP() + halfFP; yFP < y2FP; yFP += tileFP) {
 				map.setBeaconed(MapPosition.byFixedPoint(xFP, yFP), entity, protoDistributionEffectivity);
+			}
+		}
+	}
+
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		MapPosition pos = entity.getPosition();
+		MapRect supplyBounds = protoSelectionBox.createRect().expandUnit(protoSupplyAreaDistance).add(pos);
+
+		int halfFP = MapUtils.unitToFixedPoint(0.5);
+		int tileFP = MapUtils.unitToFixedPoint(1.0);
+
+		int x2FP = supplyBounds.getXFP() + supplyBounds.getWidthFP();
+		int y2FP = supplyBounds.getYFP() + supplyBounds.getHeightFP();
+		for (int xFP = supplyBounds.getXFP() + halfFP; xFP < x2FP; xFP += tileFP) {
+			for (int yFP = supplyBounds.getYFP() + halfFP; yFP < y2FP; yFP += tileFP) {
+				map.removeBeaconed(MapPosition.byFixedPoint(xFP, yFP), entity);
 			}
 		}
 	}

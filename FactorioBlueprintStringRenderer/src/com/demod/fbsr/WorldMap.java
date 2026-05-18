@@ -646,6 +646,19 @@ public class WorldMap {
 		list.add(new BeaconSource(kr, kc, beacon, distributionEffectivity));
 	}
 
+	public void removeBeaconed(MapPosition pos, MapEntity beacon) {
+		int kr = pos.getXCell();
+		int kc = pos.getYCell();
+		List<BeaconSource> list = beaconed.get(kr, kc);
+		if (list == null) {
+			return;
+		}
+		list.removeIf(bs -> bs.getBeacon() == beacon);
+		if (list.isEmpty()) {
+			beaconed.remove(kr, kc);
+		}
+	}
+
 	public void setBelt(MapPosition pos, Direction dir, boolean bendable, boolean bendOthers, boolean undergroundEnter, boolean undergroundExit) {
 		setBelt(new BeltCell(pos, dir, bendable, bendOthers, undergroundEnter, undergroundExit));
 	}
@@ -654,8 +667,16 @@ public class WorldMap {
 		belts.put(beltCell.getPos().getXCell(), beltCell.getPos().getYCell(), beltCell);
 	}
 
+	public void removeBelt(MapPosition pos) {
+		belts.remove(pos.getXCell(), pos.getYCell());
+	}
+
 	public void setCargoBayConnectable(MapPosition pos, MapEntity entity) {
 		cargoBayConnectables.put(pos.getXCell(), pos.getYCell(), entity);
+	}
+
+	public void removeCargoBayConnectable(MapPosition pos) {
+		cargoBayConnectables.remove(pos.getXCell(), pos.getYCell());
 	}
 
 	public void setHeatPipe(MapPosition pos, Direction... facings) {
@@ -674,6 +695,30 @@ public class WorldMap {
 		heatPipes.put(pos.getXCell(), pos.getYCell(), flags);
 	}
 
+	public void removeHeatPipe(MapPosition pos, Direction... facings) {
+		int kr = pos.getXCell();
+		int kc = pos.getYCell();
+		Integer currentFlags = heatPipes.get(kr, kc);
+		if (currentFlags == null) {
+			return;
+		}
+		int clearMask;
+		if (facings.length == 0) {
+			clearMask = 0b1111;
+		} else {
+			clearMask = 0;
+			for (Direction facing : facings) {
+				clearMask |= facingBit(facing);
+			}
+		}
+		int next = currentFlags & ~clearMask;
+		if (next == 0) {
+			heatPipes.remove(kr, kc);
+		} else {
+			heatPipes.put(kr, kc, next);
+		}
+	}
+
 	public void setHorizontalGate(MapPosition pos) {
 		gates.put(pos.getXCell(), pos.getYCell(), false);
 	}
@@ -682,8 +727,16 @@ public class WorldMap {
 		nixieTubes.put(pos.getXCell(), pos.getYCell(), entity);
 	}
 
+	public void removeNixieTube(MapPosition pos) {
+		nixieTubes.remove(pos.getXCell(), pos.getYCell());
+	}
+
 	public void setElevatedPipe(MapPosition pos, MapEntity entity) {
 		elevatedPipes.put(pos.getXCell(), pos.getYCell(), entity);
+	}
+
+	public void removeElevatedPipe(MapPosition pos) {
+		elevatedPipes.remove(pos.getXCell(), pos.getYCell());
 	}
 
 	public void setPipe(MapPosition pos, long layerBits, Direction... facings) {
@@ -706,8 +759,35 @@ public class WorldMap {
 		}
 	}
 
+	public void removePipe(MapPosition pos, long layerBits, Direction... facings) {
+		int kr = pos.getXCell();
+		int kc = pos.getYCell();
+		PipeCell pipe = pipes.get(kr, kc);
+		if (pipe == null) {
+			return;
+		}
+		int clearFacingBits;
+		if (facings.length == 0) {
+			clearFacingBits = 0b1111;
+		} else {
+			clearFacingBits = 0;
+			for (Direction facing : facings) {
+				clearFacingBits |= facingBit(facing);
+			}
+		}
+		pipe.facingBits &= ~clearFacingBits;
+		pipe.layersBits &= ~layerBits;
+		if (pipe.facingBits == 0 && pipe.layersBits == 0) {
+			pipes.remove(kr, kc);
+		}
+	}
+
 	public void setPipePieceAdjCode(MapPosition pos, int adjCode) {
 		pipePieceAdjCodes.put(pos.getXCell(), pos.getYCell(), adjCode);
+	}
+
+	public void removePipePieceAdjCode(MapPosition pos) {
+		pipePieceAdjCodes.remove(pos.getXCell(), pos.getYCell());
 	}
 
 	public void setSpaceFoundation(boolean foundation) {
@@ -718,17 +798,34 @@ public class WorldMap {
 		undergroundBeltEndings.put(pos.getXCell(), pos.getYCell(), new SimpleEntry<>(name, dir));
 	}
 
+	public void removeUndergroundBeltEnding(MapPosition pos) {
+		undergroundBeltEndings.remove(pos.getXCell(), pos.getYCell());
+	}
+
 	public void setVerticalGate(MapPosition pos) {
 		gates.put(pos.getXCell(), pos.getYCell(), true);
+	}
+
+	public void removeGate(MapPosition pos) {
+		gates.remove(pos.getXCell(), pos.getYCell());
 	}
 
 	public void setWall(MapPosition pos) {
 		walls.put(pos.getXCell(), pos.getYCell(), pos);
 	}
 
+	public void removeWall(MapPosition pos) {
+		walls.remove(pos.getXCell(), pos.getYCell());
+	}
+
 	public void setWired(MapEntity left, MapEntity right) {
 		wired.put(left, right);
 		wired.put(right, left);
+	}
+
+	public void unsetWired(MapEntity left, MapEntity right) {
+		wired.remove(left, right);
+		wired.remove(right, left);
 	}
 
 	public void setRail(MapRail rail) {
@@ -744,6 +841,13 @@ public class WorldMap {
 		rails.add(rail);
 	}
 
+	public void removeRail(MapRail rail) {
+		RailDef def = rail.getDef();
+		removeRailConnection(rail, def.A);
+		removeRailConnection(rail, def.B);
+		rails.remove(rail);
+	}
+
 	public void setRailConnection(MapRail rail, RailPoint point) {
 		MapPosition pos = rail.getPos().add(point.pos);
 		int kr = pos.getXCell();
@@ -755,6 +859,22 @@ public class WorldMap {
 			railConnections.put(kr, kc, list = new ArrayList<>());
 		}
 		list.add(point);
+	}
+
+	public void removeRailConnection(MapRail rail, RailPoint point) {
+		MapPosition pos = rail.getPos().add(point.pos);
+		int kr = pos.getXCell();
+		int kc = pos.getYCell();
+
+		Table<Integer, Integer, List<RailPoint>> railConnections = point.elevated ? railConnectionsElevated : railConnectionsGrounded;
+		List<RailPoint> list = railConnections.get(kr, kc);
+		if (list == null) {
+			return;
+		}
+		list.remove(point);
+		if (list.isEmpty()) {
+			railConnections.remove(kr, kc);
+		}
 	}
 
 	public boolean isRailConnected(MapRail rail, RailPoint point) {
@@ -788,6 +908,11 @@ public class WorldMap {
 		undergroundBeltLinks.put(outputPos.getXCell(), outputPos.getYCell(), inputPos);
 	}
 
+	public void unlinkUndergroundBelts(MapPosition inputPos, MapPosition outputPos) {
+		undergroundBeltLinks.remove(inputPos.getXCell(), inputPos.getYCell());
+		undergroundBeltLinks.remove(outputPos.getXCell(), outputPos.getYCell());
+	}
+
 	public Optional<MapPosition> getLinkedUndergroundBelt(MapPosition pos) {
 		return Optional.ofNullable(undergroundBeltLinks.get(pos.getXCell(), pos.getYCell()));
 	}
@@ -796,7 +921,15 @@ public class WorldMap {
 		beltReaderSources.add(pos);
 	}
 
+	public void removeBeltReaderSource(MapPosition pos) {
+		beltReaderSources.remove(pos);
+	}
+
 	public List<MapPosition> getBeltReaderSources() {
 		return beltReaderSources;
+	}
+
+	public void removeFusionConnections(MapPosition pos) {
+		fusionConnections.remove(pos.getXCell(), pos.getYCell());
 	}
 }

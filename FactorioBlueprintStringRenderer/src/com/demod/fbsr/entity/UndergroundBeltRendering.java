@@ -117,7 +117,7 @@ public class UndergroundBeltRendering extends TransportBeltConnectableRendering 
 	@Override
 	public void populateWorldMap(WorldMap map, MapEntity entity) {
 		super.populateWorldMap(map, entity);
-		
+
 		BSUndergroundBeltEntity bsEntity = entity.<BSUndergroundBeltEntity>fromBlueprint();
 		boolean input = bsEntity.type.orElse("input").equals("input");
 
@@ -125,6 +125,20 @@ public class UndergroundBeltRendering extends TransportBeltConnectableRendering 
 		map.setBelt(new UndergroundBeltCell(map, pos, entity.getDirection(), input));
 		if (!input) {
 			map.setUndergroundBeltEnding(entity.fromBlueprint().name, pos, entity.getDirection());
+		}
+	}
+
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		BSUndergroundBeltEntity bsEntity = entity.<BSUndergroundBeltEntity>fromBlueprint();
+		boolean input = bsEntity.type.orElse("input").equals("input");
+
+		MapPosition pos = entity.getPosition();
+		map.removeBelt(pos);
+		if (!input) {
+			map.removeUndergroundBeltEnding(pos);
 		}
 	}
 

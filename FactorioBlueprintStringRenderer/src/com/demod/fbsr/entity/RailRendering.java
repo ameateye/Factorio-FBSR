@@ -319,9 +319,19 @@ public abstract class RailRendering extends EntityWithOwnerRendering {
 	@Override
 	public void populateWorldMap(WorldMap map, MapEntity entity) {
 		super.populateWorldMap(map, entity);
-		
+
 		MapRail rail = new MapRail(entity.getPosition(), getRailDef(entity));
 		map.setRail(rail);
 		entity.<BSRailEntity>fromBlueprint().setRail(rail);
+	}
+
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		MapRail rail = entity.<BSRailEntity>fromBlueprint().getRail();
+		if (rail != null) {
+			map.removeRail(rail);
+		}
 	}
 }

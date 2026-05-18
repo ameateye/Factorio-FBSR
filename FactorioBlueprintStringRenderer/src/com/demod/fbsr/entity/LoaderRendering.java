@@ -225,4 +225,12 @@ public abstract class LoaderRendering extends TransportBeltConnectableRendering 
 			map.setBelt(pos.add(beltShift), entity.getDirection(), false, true, false, false);
 		}
 	}
+
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		MapPosition beltShift = getBeltShift(entity);
+		map.removeBelt(entity.getPosition().add(beltShift));
+	}
 }

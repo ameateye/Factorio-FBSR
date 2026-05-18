@@ -99,4 +99,11 @@ public abstract class NixieTubeBaseRendering extends LampRendering {
 
 		map.setNixieTube(small ? entity.getPosition() : entity.getPosition().addUnit(0, 0.5), entity);
 	}
+
+	@Override
+	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		super.unpopulateWorldMap(map, entity);
+
+		map.removeNixieTube(small ? entity.getPosition() : entity.getPosition().addUnit(0, 0.5));
+	}
 }
