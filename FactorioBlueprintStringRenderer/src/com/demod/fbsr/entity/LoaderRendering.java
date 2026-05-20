@@ -212,25 +212,33 @@ public abstract class LoaderRendering extends TransportBeltConnectableRendering 
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		boolean input = entity.<BSLoaderEntity>fromBlueprint().type.orElse("input").equals("input");
 		MapPosition beltShift = getBeltShift(entity);
 
 		MapPosition pos = entity.getPosition();
+		MapPosition beltPos = pos.add(beltShift);
 		if (input) {
-			map.setBelt(pos.add(beltShift), entity.getDirection(), false, false, false, false);
+			map.setBelt(beltPos, entity.getDirection(), false, false, false, false);
 		} else {
-			map.setBelt(pos.add(beltShift), entity.getDirection(), false, true, false, false);
+			map.setBelt(beltPos, entity.getDirection(), false, true, false, false);
 		}
+
+		affected.addAll(positionAndFacingAxis(beltPos, entity.getDirection()));
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
 		MapPosition beltShift = getBeltShift(entity);
-		map.removeBelt(entity.getPosition().add(beltShift));
+		MapPosition beltPos = entity.getPosition().add(beltShift);
+		map.removeBelt(beltPos);
+
+		affected.addAll(positionAndFacingAxis(beltPos, entity.getDirection()));
+		return affected;
 	}
 }

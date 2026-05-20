@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Line2D;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.demod.factorio.fakelua.LuaValue;
@@ -114,9 +115,16 @@ public class UndergroundBeltRendering extends TransportBeltConnectableRendering 
 		protoMaxDistance = prototype.lua().get("max_distance").toint();
 	}
 
+	// Limitation: UG-belt entrance reads side cells for belt-reader (covered
+	// by facing-axis via the same rule as transport belts) and reads
+	// `getLinkedUndergroundBelt(pos)` for belt-reader circuit flow through
+	// the underground span. The latter can extend up to `protoMaxDistance`
+	// tiles along the facing axis; adding/removing one entrance can in
+	// principle flip the linked-belt state of a reader at the other end.
+	// Not captured here — no belt readers in DS speedrun runs.
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		BSUndergroundBeltEntity bsEntity = entity.<BSUndergroundBeltEntity>fromBlueprint();
 		boolean input = bsEntity.type.orElse("input").equals("input");
@@ -126,11 +134,14 @@ public class UndergroundBeltRendering extends TransportBeltConnectableRendering 
 		if (!input) {
 			map.setUndergroundBeltEnding(entity.fromBlueprint().name, pos, entity.getDirection());
 		}
+
+		affected.addAll(positionAndFacingAxis(pos, entity.getDirection()));
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
 		BSUndergroundBeltEntity bsEntity = entity.<BSUndergroundBeltEntity>fromBlueprint();
 		boolean input = bsEntity.type.orElse("input").equals("input");
@@ -140,6 +151,9 @@ public class UndergroundBeltRendering extends TransportBeltConnectableRendering 
 		if (!input) {
 			map.removeUndergroundBeltEnding(pos);
 		}
+
+		affected.addAll(positionAndFacingAxis(pos, entity.getDirection()));
+		return affected;
 	}
 
 	@Override

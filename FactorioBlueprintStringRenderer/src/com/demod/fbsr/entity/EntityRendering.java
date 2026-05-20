@@ -3,6 +3,7 @@ package com.demod.fbsr.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -189,14 +190,15 @@ public abstract class EntityRendering extends EntityRendererFactory {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 		Direction dir = entity.getDirection();
-		
+
 		for (BindFluidBox bindFluidBox : bindings.getFluidBoxes()) {
 			if (!bindFluidBox.test(map, entity)) {
 				continue;
 			}
-			
+
 			for (FPFluidBox fluidBox : bindFluidBox.getFluidBoxes()) {
 				for (FPPipeConnectionDefinition conn : fluidBox.pipeConnections) {
 					if (!bindFluidBox.connectorTest(map, entity, fluidBox, conn)) {
@@ -210,6 +212,7 @@ public abstract class EntityRendering extends EntityRendererFactory {
 						MapPosition pos = dir.rotate(MapPosition.convert(conn.position.get())).add(entity.getPosition());
 						// TODO use flow direction for pipe arrow logistics
 						map.setPipe(pos, conn.getLayerBits(), facing);
+						affected.addAll(positionAndCardinals(pos));
 					}
 				}
 			}
@@ -224,12 +227,16 @@ public abstract class EntityRendering extends EntityRendererFactory {
 				Direction facing = conn.direction.rotate(dir);
 				MapPosition pos = dir.rotate(MapPosition.convert(conn.position)).add(entity.getPosition());
 				map.setHeatPipe(pos, facing);
+				affected.addAll(positionAndCardinals(pos));
 			}
 		}
+
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 		Direction dir = entity.getDirection();
 
 		for (BindFluidBox bindFluidBox : bindings.getFluidBoxes()) {
@@ -249,6 +256,7 @@ public abstract class EntityRendering extends EntityRendererFactory {
 						Direction facing = conn.direction.get().rotate(dir);
 						MapPosition pos = dir.rotate(MapPosition.convert(conn.position.get())).add(entity.getPosition());
 						map.removePipe(pos, conn.getLayerBits(), facing);
+						affected.addAll(positionAndCardinals(pos));
 					}
 				}
 			}
@@ -263,8 +271,11 @@ public abstract class EntityRendering extends EntityRendererFactory {
 				Direction facing = conn.direction.rotate(dir);
 				MapPosition pos = dir.rotate(MapPosition.convert(conn.position)).add(entity.getPosition());
 				map.removeHeatPipe(pos, facing);
+				affected.addAll(positionAndCardinals(pos));
 			}
 		}
+
+		return affected;
 	}
 
 }

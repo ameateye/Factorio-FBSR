@@ -2,6 +2,7 @@ package com.demod.fbsr.entity.elevatedpipes;
 
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.demod.factorio.fakelua.LuaValue;
@@ -113,17 +114,27 @@ public class ElevatedPipeRendering extends FurnaceRendering {
         protoPipeVerticalSingle.defineSprites(register);
     }
 
+    // Limitation: createRenderers checks `isElevatedPipe(dir.offset(pos, distCheck))`
+    // along the facing axis (not just adjacent cardinals). The 4-cardinal set
+    // captures the immediate neighbours but misses farther same-axis reads.
+    // Acceptable — elevated pipes are space-age content, not in scope.
     @Override
-    public void populateWorldMap(WorldMap map, MapEntity entity) {
-        super.populateWorldMap(map, entity);
+    public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+        Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
         map.setElevatedPipe(entity.getPosition(), entity);
+
+        affected.addAll(positionAndCardinals(entity.getPosition()));
+        return affected;
     }
 
     @Override
-    public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-        super.unpopulateWorldMap(map, entity);
+    public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+        Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
         map.removeElevatedPipe(entity.getPosition());
+
+        affected.addAll(positionAndCardinals(entity.getPosition()));
+        return affected;
     }
 }

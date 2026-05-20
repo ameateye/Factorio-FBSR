@@ -3,6 +3,7 @@ package com.demod.fbsr.entity.nixietubes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.demod.factorio.fakelua.LuaValue;
@@ -93,17 +94,32 @@ public abstract class NixieTubeBaseRendering extends LampRendering {
 		protoSymbols.forEach(fp -> fp.defineSprites(register));
 	}
 
+	// Limitation: createRenderers walks WEST from each nixie, accumulating
+	// same-name neighbours into symbolIndex. Adding/removing a nixie at P
+	// extends or breaks the chain for every same-name nixie east of P,
+	// potentially many tiles. The 4-cardinal approximation catches only the
+	// immediate east neighbour. A precise fix would walk east during populate
+	// and add every same-name nixie in the chain to `affected`. Not in scope
+	// for replay-analyzer (modded content).
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
-		map.setNixieTube(small ? entity.getPosition() : entity.getPosition().addUnit(0, 0.5), entity);
+		MapPosition nixiePos = small ? entity.getPosition() : entity.getPosition().addUnit(0, 0.5);
+		map.setNixieTube(nixiePos, entity);
+
+		affected.addAll(positionAndCardinals(nixiePos));
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
-		map.removeNixieTube(small ? entity.getPosition() : entity.getPosition().addUnit(0, 0.5));
+		MapPosition nixiePos = small ? entity.getPosition() : entity.getPosition().addUnit(0, 0.5);
+		map.removeNixieTube(nixiePos);
+
+		affected.addAll(positionAndCardinals(nixiePos));
+		return affected;
 	}
 }

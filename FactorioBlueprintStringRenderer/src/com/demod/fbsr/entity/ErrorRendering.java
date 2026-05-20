@@ -2,6 +2,7 @@ package com.demod.fbsr.entity;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -44,7 +45,8 @@ public class ErrorRendering extends EntityRendererFactory {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		return Set.of();
 	}
 
 	@Override

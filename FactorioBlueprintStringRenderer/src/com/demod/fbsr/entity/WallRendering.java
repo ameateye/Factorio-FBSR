@@ -6,6 +6,7 @@ import com.demod.fbsr.FPUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -136,16 +137,31 @@ public class WallRendering extends EntityWithOwnerRendering {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		map.setWall(entity.getPosition());
+
+		addWallNeighbours(affected, entity.getPosition());
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
 		map.removeWall(entity.getPosition());
+
+		addWallNeighbours(affected, entity.getPosition());
+		return affected;
+	}
+
+	// Wall renders its 4 cardinals (for adjacency) plus the NE diagonal (for
+	// the corner-fill check). Inverting: a wall at P affects renders of walls
+	// at its 4 cardinals (they read P) and the wall at P's SW (it reads P as
+	// its NE). 6 cells total.
+	private static void addWallNeighbours(Set<MapPosition> affected, MapPosition pos) {
+		affected.addAll(positionAndCardinals(pos));
+		affected.add(Direction.SOUTHWEST.offset(pos));
 	}
 }

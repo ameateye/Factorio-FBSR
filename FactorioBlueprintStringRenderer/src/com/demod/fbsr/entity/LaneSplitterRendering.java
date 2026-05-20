@@ -2,6 +2,7 @@ package com.demod.fbsr.entity;
 
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.demod.fbsr.Direction;
@@ -137,18 +138,25 @@ public class LaneSplitterRendering extends TransportBeltConnectableRendering {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		Direction direction = entity.getDirection();
 		MapPosition pos = entity.getPosition();
 		map.setBelt(pos, direction, false, true, false, false);
+
+		affected.addAll(positionAndFacingAxis(pos, direction));
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
-		map.removeBelt(entity.getPosition());
+		MapPosition pos = entity.getPosition();
+		map.removeBelt(pos);
+
+		affected.addAll(positionAndFacingAxis(pos, entity.getDirection()));
+		return affected;
 	}
 }

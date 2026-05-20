@@ -7,6 +7,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -195,9 +196,9 @@ public class TransportBeltRendering extends TransportBeltConnectableRendering {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
-		
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
+
 		map.setBelt(new BeltCell(entity.getPosition(), entity.getDirection(), true, true, false, false) {
 			@Override
 			public Optional<BeltCell> nextReadAllBelts() {
@@ -211,13 +212,19 @@ public class TransportBeltRendering extends TransportBeltConnectableRendering {
 				return prevPos.flatMap(map::getBelt);
 			}
 		});
+
+		affected.addAll(positionAndFacingAxis(entity.getPosition(), entity.getDirection()));
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
 		map.removeBelt(entity.getPosition());
+
+		affected.addAll(positionAndFacingAxis(entity.getPosition(), entity.getDirection()));
+		return affected;
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -295,24 +296,38 @@ public abstract class CargoBayConnectionsRendering extends EntityWithOwnerRender
 		}
 	}
 
+	// Limitation: createRenderers checks `isCargoBayConnectable(checkPoint)` at
+	// distance 2 from each connection point (rotated by 8 directions per
+	// elCon). The affected set should include cargo-bay connection points
+	// within 2 tiles in any direction — this implementation only includes the
+	// added/removed entity's own connection points. Not in scope for
+	// replay-analyzer (space-age content).
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		MapPosition pos = entity.getPosition();
 		for (MapPosition dcp : protoConnectionPoints) {
-			map.setCargoBayConnectable(pos.add(dcp), entity);
+			MapPosition cp = pos.add(dcp);
+			map.setCargoBayConnectable(cp, entity);
+			affected.add(cp);
 		}
+
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
 		MapPosition pos = entity.getPosition();
 		for (MapPosition dcp : protoConnectionPoints) {
-			map.removeCargoBayConnectable(pos.add(dcp));
+			MapPosition cp = pos.add(dcp);
+			map.removeCargoBayConnectable(cp);
+			affected.add(cp);
 		}
+
+		return affected;
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.demod.fbsr.entity;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.demod.fbsr.EntityRendererFactory;
@@ -69,8 +70,8 @@ public class BeaconRendering extends EntityWithOwnerRendering {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		MapPosition pos = entity.getPosition();
 		MapRect supplyBounds = protoSelectionBox.createRect().expandUnit(protoSupplyAreaDistance).add(pos);
@@ -85,11 +86,15 @@ public class BeaconRendering extends EntityWithOwnerRendering {
 				map.setBeaconed(MapPosition.byFixedPoint(xFP, yFP), entity, protoDistributionEffectivity);
 			}
 		}
+
+		// Beaconed cells are logistic-grid state, not rendered output — only the
+		// beacon's own tile is in `affected` (inherited from super).
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
 		MapPosition pos = entity.getPosition();
 		MapRect supplyBounds = protoSelectionBox.createRect().expandUnit(protoSupplyAreaDistance).add(pos);
@@ -104,6 +109,8 @@ public class BeaconRendering extends EntityWithOwnerRendering {
 				map.removeBeaconed(MapPosition.byFixedPoint(xFP, yFP), entity);
 			}
 		}
+
+		return affected;
 	}
 
 }

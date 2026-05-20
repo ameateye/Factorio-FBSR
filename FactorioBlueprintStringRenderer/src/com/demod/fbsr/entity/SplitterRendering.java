@@ -3,6 +3,7 @@ package com.demod.fbsr.entity;
 import java.awt.geom.Path2D;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.demod.fbsr.Direction;
@@ -163,8 +164,8 @@ public class SplitterRendering extends TransportBeltConnectableRendering {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		Direction direction = entity.getDirection();
 		MapPosition pos = entity.getPosition();
@@ -172,15 +173,25 @@ public class SplitterRendering extends TransportBeltConnectableRendering {
 		MapPosition belt2Pos = direction.right().offset(pos, 0.5);
 		map.setBelt(belt1Pos, direction, false, true, false, false);
 		map.setBelt(belt2Pos, direction, false, true, false, false);
+
+		affected.addAll(positionAndFacingAxis(belt1Pos, direction));
+		affected.addAll(positionAndFacingAxis(belt2Pos, direction));
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
 		Direction direction = entity.getDirection();
 		MapPosition pos = entity.getPosition();
-		map.removeBelt(direction.left().offset(pos, 0.5));
-		map.removeBelt(direction.right().offset(pos, 0.5));
+		MapPosition belt1Pos = direction.left().offset(pos, 0.5);
+		MapPosition belt2Pos = direction.right().offset(pos, 0.5);
+		map.removeBelt(belt1Pos);
+		map.removeBelt(belt2Pos);
+
+		affected.addAll(positionAndFacingAxis(belt1Pos, direction));
+		affected.addAll(positionAndFacingAxis(belt2Pos, direction));
+		return affected;
 	}
 }

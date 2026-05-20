@@ -2,6 +2,7 @@ package com.demod.fbsr.entity;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.demod.factorio.fakelua.LuaTable;
@@ -93,13 +94,15 @@ public class TrainStopRendering extends EntityWithOwnerRendering {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		MapPosition pos = entity.getPosition();
 		Direction dir = entity.getDirection();
 
 		// TODO
 //		map.getOrCreateRailNode(dir.offset(dir.left().offset(pos, 2), 0.5)).setStation(dir);
+
+		return affected;
 	}
 }

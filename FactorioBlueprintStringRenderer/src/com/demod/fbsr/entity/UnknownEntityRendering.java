@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -98,7 +99,8 @@ public class UnknownEntityRendering extends EntityRendererFactory {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		return Set.of();
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.demod.fbsr.entity;
 
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.demod.factorio.fakelua.LuaTable;
@@ -55,11 +56,13 @@ public class BoilerRendering extends EntityWithOwnerRendering {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		Direction dir = entity.getDirection();
 		MapPosition position = dir.back().offset(entity.getPosition(), 0.5);
+
+		return affected;
 	}
 
 }

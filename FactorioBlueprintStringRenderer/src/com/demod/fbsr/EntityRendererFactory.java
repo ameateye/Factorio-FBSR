@@ -4,6 +4,7 @@ import java.awt.geom.Point2D;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -300,13 +301,45 @@ public abstract class EntityRendererFactory {
 		// default do nothing
 	}
 
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		// default do nothing
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		return new HashSet<>(Set.of(entity.getPosition()));
 	}
 
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		// default do nothing; subclasses that override populateWorldMap should
-		// mirror their world-map writes here so an entity can be removed cleanly.
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		// Subclasses that override populateWorldMap should mirror their world-map
+		// writes here so an entity can be removed cleanly. The returned positions
+		// are the cells whose render output may have changed as a result.
+		return new HashSet<>(Set.of(entity.getPosition()));
+	}
+
+	protected static Set<MapPosition> positionAndCardinals(MapPosition pos) {
+		Set<MapPosition> s = new HashSet<>(5);
+		s.add(pos);
+		s.add(Direction.NORTH.offset(pos));
+		s.add(Direction.EAST.offset(pos));
+		s.add(Direction.SOUTH.offset(pos));
+		s.add(Direction.WEST.offset(pos));
+		return s;
+	}
+
+	/**
+	 * Belt cell at {@code pos} facing {@code facing} only affects renders of
+	 * the cells along its own facing axis: itself plus the cell in front and
+	 * the cell behind. Sides never matter, because a side neighbour reads the
+	 * belt at {@code pos} only when it expects {@code pos}'s facing to be
+	 * perpendicular toward it — and we're considering all 8 possible neighbour
+	 * facings, none of which makes a belt facing "toward" a perpendicular cell
+	 * (a belt facing N cannot also be facing E). This applies to the
+	 * belt-reader side check too: a side feeder that affects a reader belt's
+	 * render must be facing toward the reader, which puts the reader on the
+	 * side feeder's own facing axis.
+	 */
+	protected static Set<MapPosition> positionAndFacingAxis(MapPosition pos, Direction facing) {
+		Set<MapPosition> s = new HashSet<>(3);
+		s.add(pos);
+		s.add(facing.offset(pos));
+		s.add(facing.back().offset(pos));
+		return s;
 	}
 
 	public void setProfile(Profile profile) {

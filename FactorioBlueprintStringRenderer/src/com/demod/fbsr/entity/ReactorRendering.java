@@ -1,5 +1,7 @@
 package com.demod.fbsr.entity;
 
+import java.util.Set;
+
 import com.demod.factorio.fakelua.LuaTable;
 import com.demod.factorio.fakelua.LuaValue;
 import com.demod.fbsr.Direction;
@@ -7,6 +9,7 @@ import com.demod.fbsr.EntityType;
 import com.demod.fbsr.WorldMap;
 import com.demod.fbsr.bind.Bindings;
 import com.demod.fbsr.map.MapEntity;
+import com.demod.fbsr.map.MapPosition;
 
 @EntityType("reactor")
 public class ReactorRendering extends EntityWithOwnerRendering {
@@ -25,7 +28,7 @@ public class ReactorRendering extends EntityWithOwnerRendering {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		return super.populateWorldMap(map, entity);
 	}
 }

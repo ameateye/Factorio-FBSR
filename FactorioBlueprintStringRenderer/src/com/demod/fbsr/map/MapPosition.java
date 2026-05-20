@@ -171,4 +171,17 @@ public class MapPosition {
 	public static MapPosition average(MapPosition p1, MapPosition p2) {
 		return new MapPosition((p1.xfp + p2.xfp) / 2, (p1.yfp + p2.yfp) / 2);
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof MapPosition)) return false;
+		MapPosition other = (MapPosition) o;
+		return xfp == other.xfp && yfp == other.yfp;
+	}
+
+	@Override
+	public int hashCode() {
+		return xfp * 31 + yfp;
+	}
 }

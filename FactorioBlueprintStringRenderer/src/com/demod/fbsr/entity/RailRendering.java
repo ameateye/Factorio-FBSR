@@ -4,6 +4,7 @@ import java.awt.geom.Path2D;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -316,22 +317,34 @@ public abstract class RailRendering extends EntityWithOwnerRendering {
 		}
 	}
 
+	// Limitation: createRenderers uses `isRailConnected(rail, rail.A/B)` which
+	// looks up neighbours via the rail-endpoint graph, not cell cardinals. A
+	// new rail can connect to existing rails at fractional positions matched
+	// by endpoint coordinates. Inverting that read into a cell-set is
+	// non-trivial; for now the default (entity position only) under-
+	// approximates and adjacent rails won't re-render their end-cap toggle
+	// when a neighbour rail is added/removed mid-run. Initial build-time
+	// renders use the correct WorldMap state.
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		MapRail rail = new MapRail(entity.getPosition(), getRailDef(entity));
 		map.setRail(rail);
 		entity.<BSRailEntity>fromBlueprint().setRail(rail);
+
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
 		MapRail rail = entity.<BSRailEntity>fromBlueprint().getRail();
 		if (rail != null) {
 			map.removeRail(rail);
 		}
+
+		return affected;
 	}
 }

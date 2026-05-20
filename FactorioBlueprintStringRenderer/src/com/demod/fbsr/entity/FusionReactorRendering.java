@@ -1,6 +1,7 @@
 package com.demod.fbsr.entity;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -92,26 +93,34 @@ public class FusionReactorRendering extends EntityWithOwnerRendering {
 	}
 
 	@Override
-	public void populateWorldMap(WorldMap map, MapEntity entity) {
-		super.populateWorldMap(map, entity);
+	public Set<MapPosition> populateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.populateWorldMap(map, entity);
 
 		boolean sideways = entity.getDirection().isHorizontal();
 
 		for (int i = 0; i < protoConnectionLocations.size(); i++) {
 			FPVector pos = protoConnectionLocations.get(i);
 			boolean modePlasma = ((((i / 2) % 2) != 0) == sideways);
-			List<Boolean> connections = map.getOrCreateFusionConnections(entity.getPosition().add(MapPosition.convert(pos)));
+			MapPosition cp = entity.getPosition().add(MapPosition.convert(pos));
+			List<Boolean> connections = map.getOrCreateFusionConnections(cp);
 			connections.add(modePlasma);
+			affected.add(cp);
 		}
+
+		return affected;
 	}
 
 	@Override
-	public void unpopulateWorldMap(WorldMap map, MapEntity entity) {
-		super.unpopulateWorldMap(map, entity);
+	public Set<MapPosition> unpopulateWorldMap(WorldMap map, MapEntity entity) {
+		Set<MapPosition> affected = super.unpopulateWorldMap(map, entity);
 
 		for (FPVector pos : protoConnectionLocations) {
-			map.removeFusionConnections(entity.getPosition().add(MapPosition.convert(pos)));
+			MapPosition cp = entity.getPosition().add(MapPosition.convert(pos));
+			map.removeFusionConnections(cp);
+			affected.add(cp);
 		}
+
+		return affected;
 	}
 
 }
